@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Study Hours vs Academic Performance Analyzer</title>
+<link rel="stylesheet" href="style.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+</head>
+<body>
+<nav class="nav">
+  <span class="brand">Study Analyzer</span>
+  <div class="links">
+    <a href="#dashboard">Dashboard</a><a href="#data">Data</a><a href="#statistics">Statistics</a>
+    <a href="#visualization">Visualization</a><a href="#regression">Regression</a>
+    <a href="#prediction">Prediction</a><a href="#about">About Project</a>
+  </div>
+  <button id="themeBtn" class="btn ghost" type="button">Dark mode</button>
+</nav>
+
+<header class="hero" id="dashboard">
+  <h1>Study Hours vs Academic Performance Analyzer</h1>
+  <p class="subtitle">A Statistical Analysis and Prediction System</p>
+  <p class="lead">This application studies the relationship between how long students study and the marks they score, using mean, variance, standard deviation, covariance, correlation and simple linear regression.</p>
+  <div class="cards">
+    <div class="card"><span class="label">Number of Students</span><strong id="cardCount">0</strong></div>
+    <div class="card"><span class="label">Average Study Hours</span><strong id="cardMeanX">–</strong></div>
+    <div class="card"><span class="label">Average Marks</span><strong id="cardMeanY">–</strong></div>
+    <div class="card"><span class="label">Correlation Coefficient (r)</span><strong id="cardR">–</strong></div>
+    <div class="card"><span class="label">Std. Deviation of Marks</span><strong id="cardSdY">–</strong></div>
+  </div>
+</header>
+
+<main>
+<section id="data">
+  <h2>Data Entry</h2>
+  <div class="grid two">
+    <div class="panel">
+      <h3>Add a student</h3>
+      <div class="field"><label for="name">Student name</label><input id="name" type="text" placeholder="e.g. Rahul"></div>
+      <div class="field"><label for="hours">Study hours (per day)</label><input id="hours" type="number" step="0.1" min="0" placeholder="e.g. 5"></div>
+      <div class="field"><label for="marks">Academic marks (0–100)</label><input id="marks" type="number" step="0.1" min="0" max="100" placeholder="e.g. 72"></div>
+      <p id="formMsg" class="msg" role="alert"></p>
+      <div class="row">
+        <button id="addBtn" class="btn" type="button">Add Student</button>
+        <button id="clearFormBtn" class="btn ghost" type="button">Clear Form</button>
+      </div>
+    </div>
+    <div class="panel">
+      <h3>Student records</h3>
+      <div class="row">
+        <button id="sampleBtn" class="btn" type="button">Load Sample Data</button>
+        <button id="exportBtn" class="btn ghost" type="button">Export CSV</button>
+        <button id="clearAllBtn" class="btn danger" type="button">Clear All Data</button>
+        <button id="resetBtn" class="btn ghost" type="button">Reset Dashboard</button>
+      </div>
+      <div class="scroll">
+        <table>
+          <thead><tr><th>Student</th><th class="num">Study Hours</th><th class="num">Academic Marks</th><th>Action</th></tr></thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="statistics">
+  <h2>Statistics</h2>
+  <p id="statsNote" class="msg"></p>
+  <div class="scroll">
+    <table class="stats">
+      <thead><tr><th>Measure</th><th class="num">Study Hours (X)</th><th class="num">Marks (Y)</th></tr></thead>
+      <tbody>
+        <tr><td>Mean</td><td class="num" id="meanX">–</td><td class="num" id="meanY">–</td></tr>
+        <tr><td>Variance</td><td class="num" id="varX">–</td><td class="num" id="varY">–</td></tr>
+        <tr><td>Standard Deviation</td><td class="num" id="sdX">–</td><td class="num" id="sdY">–</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="grid two">
+    <div class="panel"><span class="label">Covariance Cov(X,Y)</span><strong class="big" id="cov">–</strong></div>
+    <div class="panel"><span class="label">Pearson correlation (r)</span><strong class="big" id="rVal">–</strong>
+      <p id="rMeaning" class="small"></p></div>
+  </div>
+</section>
+
+<section id="visualization">
+  <h2>Visualization</h2>
+  <p id="chartMsg" class="msg" role="alert"></p>
+  <div class="panel chartbox"><canvas id="scatterChart" aria-label="Scatter plot of study hours versus marks" role="img"></canvas></div>
+</section>
+
+<section id="regression">
+  <h2>Simple Linear Regression</h2>
+  <div class="grid two">
+    <div class="panel"><span class="label">Regression equation</span><strong class="big" id="equation">Not enough data</strong></div>
+    <div class="panel"><span class="label">Slope (b₁) and intercept (b₀)</span>
+      <p class="big small-big">b₁ = <span id="slope">–</span><br>b₀ = <span id="intercept">–</span></p></div>
+  </div>
+  <p class="small">The slope tells us how many marks change, on average, for each extra hour of study. The intercept is the estimated mark at 0 study hours.</p>
+  <div class="panel" id="summary"><h3>Analysis Summary</h3><p id="summaryText">Add at least two students to see an analysis.</p>
+    <ul id="summaryList" class="plain"></ul></div>
+</section>
+
+<section id="prediction">
+  <h2>Marks Prediction</h2>
+  <div class="panel">
+    <div class="field"><label for="predHours">Enter Study Hours (0 or more, decimals allowed)</label><input id="predHours" type="number" step="any" min="0" placeholder="e.g. 2.5"></div>
+    <button id="predictBtn" class="btn" type="button">Predict Marks</button>
+    <p id="predError" class="msg" role="alert"></p>
+    <div id="predOutput" hidden>
+      <p class="label">Raw Regression Prediction</p><p class="result raw" id="predRaw"></p>
+      <p class="label">Final Prediction (0–100)</p><p class="result" id="predFinal"></p>
+      <p id="predRangeMsg" class="msg"></p>
+      <p id="predWarn" class="msg warn"></p>
+    </div>
+    <p class="small">Prediction is a statistical estimate based on the current dataset. It does not guarantee actual academic performance, and correlation does not imply causation.</p>
+  </div>
+</section>
+
+<section id="formulas">
+  <h2>Statistical Formulas</h2>
+  <details open><summary>Mean: x̄ = Σx / n</summary><p>Add up all the values and divide by how many there are. It is the "average" or centre of the data.</p></details>
+  <details><summary>Variance: σ² = Σ(x − x̄)² / n</summary><p>For each value, find how far it is from the mean, square it, then average these. It tells us how spread out the data is.</p></details>
+  <details><summary>Standard Deviation: σ = √Variance</summary><p>The square root of variance. It is the typical distance of a value from the mean, in the original units.</p></details>
+  <details><summary>Covariance: Cov(X,Y) = Σ[(X − X̄)(Y − Ȳ)] / n</summary><p>Shows whether X and Y move together. Positive means both tend to rise together; negative means one rises as the other falls.</p></details>
+  <details><summary>Pearson Correlation: r = Cov(X,Y) / (σX × σY)</summary><p>Covariance rescaled to lie between −1 and +1. Near +1: strong positive line. Near 0: weak or no linear relationship. Near −1: strong negative line. Correlation does not prove causation.</p></details>
+  <details><summary>Simple Linear Regression: ŷ = b₀ + b₁x</summary><p>The best-fit straight line through the points, where b₁ = Cov(X,Y) / σX² and b₀ = Ȳ − b₁X̄. We use it to estimate marks for a given number of study hours.</p></details>
+</section>
+
+<section id="about">
+  <h2>About Project</h2>
+  <div class="panel">
+    <h3>Project Title</h3><p>Study Hours vs Academic Performance Analyzer</p>
+    <h3>Project Description</h3><p>A statistical application that analyzes the relationship between students' study hours and academic marks. It uses statistical calculations and graphs to identify the correlation between study time and performance and uses linear regression to estimate expected marks.</p>
+    <h3>Topics Covered</h3>
+    <ul class="tags"><li>Mean</li><li>Variance</li><li>Standard Deviation</li><li>Scatter Plot</li><li>Covariance</li><li>Correlation</li><li>Simple Linear Regression</li><li>Data Visualization</li></ul>
+    <h3>Project Objective</h3><p>To demonstrate how statistical methods can be used to analyze student academic data and visualize relationships between variables.</p>
+  </div>
+</section>
+</main>
+<footer>Built with HTML, CSS and JavaScript · Chart.js for graphs</footer>
+<script src="script.js"></script>
+</body>
+</html>
